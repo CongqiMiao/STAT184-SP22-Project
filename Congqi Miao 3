@@ -1,0 +1,16 @@
+```{r}
+## Top 10 rated movie genres
+Movies_Viz <- separate_rows(Movies_Year, genres, sep = '\\|') %>% filter(release_year!="erso")
+
+Movies_Viz %>% 
+  select(userId,rating,genres)%>%
+  unique()%>%
+  group_by(genres) %>%
+  summarise(mean_rating=mean(rating))%>%
+  arrange(desc(mean_rating))%>%
+  top_n(10,mean_rating) %>%
+  ggplot(aes(x=reorder(genres,mean_rating), mean_rating)) +
+  geom_col(fill="light yellow") +
+  coord_flip() +
+  labs(title = "Top 10 Rated Movie Genres ",
+       x = "Genre", y = "Average Rating")
