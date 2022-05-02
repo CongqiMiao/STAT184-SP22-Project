@@ -1,0 +1,33 @@
+---
+title: "STAT184-SP22-Project"
+date: "Apr 30 2022"
+author: "CONGQI MIAO"
+output: html_notebook
+---
+
+## Packages and Data
+
+```{r, warning=FALSE, message=FALSE}
+## Import Packages and Data
+library(tidyverse)  
+library(lubridate)  
+
+## Read files
+Movies <- read_csv("./movies.csv") 
+Ratings <- read_csv("./ratings.csv")
+Tags <- read_csv("./tags.csv")
+
+```
+
+
+## Data Wrangling (Initial)
+
+```{r}
+## Convert the timestamp data to the actual date
+Ratings%>%
+  mutate(rating_date = as_datetime(timestamp, origin = "1970-01-01", tz = "UTC")) -> Ratings_Date
+head(Ratings_Date, 3)
+
+Tags%>%
+  mutate(tag_date = as_datetime(timestamp, origin = "1970-01-01", tz = "UTC")) -> Tags_Date
+head(Tags_Date, 3)
