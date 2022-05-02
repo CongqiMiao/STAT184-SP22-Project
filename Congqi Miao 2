@@ -1,0 +1,19 @@
+```{r}
+## Create a joined table where person both rated AND tagged movie
+Ratings_Date%>%
+  inner_join(Tags_Date,by=c("movieId", "userId"))%>%
+  inner_join(Movies,by="movieId") %>%
+  select(userId, rating, rating_date, tag, tag_date, title, genres) -> Movies_Joined
+
+head(Movies_Joined, 3)
+```
+
+```{r}
+## Create a new table with release_year and cleaned movie title
+Movies_Joined%>%
+  mutate(release_year = str_sub(Movies_Joined$title,-5,-2)) -> Movies_Year
+Movies_Year$title = str_sub(Movies_Year$title, 1, nchar(Movies_Year$title)-6)
+
+head(Movies_Year, 3)
+
+```
