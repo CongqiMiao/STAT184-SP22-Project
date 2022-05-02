@@ -1,0 +1,14 @@
+## Top 10 Years with Most Released Movies
+
+Movies_Viz %>% 
+  select(title,release_year)%>%
+  unique()%>%
+  group_by(release_year) %>%
+  summarise(n=n())%>%
+  arrange(desc(n))%>%
+  top_n(10,n)%>%
+  ggplot(aes(x=reorder(release_year,n), n)) +
+  geom_col(fill="light blue") +
+  coord_flip() +
+  labs(title = "Top 10 Years with Most Released Movies ",
+       x = "Year", y = "Number of Released Movies")
