@@ -1,0 +1,104 @@
+---
+title: "STAT184-SP22-Project"
+date: "Apr 30 2022"
+author: "CONGQI MIAO"
+output: html_notebook
+---
+
+## Packages and Data
+
+```{r, warning=FALSE, message=FALSE}
+## Packages and Data
+library(tidyverse)  
+library(lubridate)  
+
+## Read files
+Movies <- read_csv("./movies.csv") 
+Ratings <- read_csv("./ratings.csv")
+Tags <- read_csv("./tags.csv")
+
+```
+
+
+## Data Wrangling (Initial)
+
+```{r}
+## Convert the timestamp data to the actual date
+Ratings%>%
+  mutate(rating_date = as_datetime(timestamp, origin = "1970-01-01", tz = "UTC")) -> Ratings_Date
+head(Ratings_Date, 3)
+
+Tags%>%
+  mutate(tag_date = as_datetime(timestamp, origin = "1970-01-01", tz = "UTC")) -> Tags_Date
+head(Tags_Date, 3)
+```
+
+
+```{r}
+## Create a joined table where person both rated AND tagged movie
+Ratings_Date%>%
+  inner_join(Tags_Date,by=c("movieId", "userId"))%>%
+  inner_join(Movies,by="movieId") %>%
+  select(userId, rating, rating_date, tag, tag_date, title, genres) -> Movies_Joined
+
+head(Movies_Joined, 3)
+```
+
+```{r}
+## Create a new table with release_year and cleaned movie title
+Movies_Joined%>%
+  mutate(release_year = str_sub(Movies_Joined$title,-5,-2)) -> Movies_Year
+Movies_Year$title = str_sub(Movies_Year$title, 1, nchar(Movies_Year$title)-6)
+
+head(Movies_Year, 3)
+
+```
+
+## Data Visualization
+```{r}
+## Top 10 rated movie genres
+Movies_Viz <- separate_rows(Movies_Year, genres, sep = '\\|') %>% filter(release_year!="erso")
+
+Movies_Viz %>% 
+  select(userId,rating,genres)%>%
+  unique()%>%
+  group_by(genres) %>%
+  summarise(mean_rating=mean(rating))%>%
+  arrange(desc(mean_rating))%>%
+  top_n(10,mean_rating) %>%
+  ggplot(aes(x=reorder(genres,mean_rating), mean_rating)) +
+  geom_col(fill="light yellow") +
+  coord_flip() +
+  labs(title = "Top 10 Rated Movie Genres ",
+       x = "Genre", y = "Average Rating")
+
+## Interpretation: Western is the highest rated genre among all the types with an average rating of over 4. For 2nd and 10th genre, the ratings are quite close between 3.75 to 4.0.
+
+```
+
+```{r}
+## Top 10 Years with Most Released Movies
+
+Movies_Viz %>% 
+  select(title,release_year)%>%
+  unique()%>%
+  group_by(release_year) %>%
+  summarise(n=n())%>%
+  arrange(desc(n))%>%
+  top_n(10,n)%>%
+  ggplot(aes(x=reorder(release_year,n), n)) +
+  geom_col(fill="light blue") +
+  coord_flip() +
+  labs(title = "Top 10 Years with Most Released Movies ",
+       x = "Year", y = "Number of Released Movies")
+
+# Interpretation: As we could see from the graph below, 2002 is the year with most released movies. It gives us the information about the prosperity of the industry in the past. 
+
+
+```
+
+## Resources
+https://stackoverflow.com/questions/1299871/how-to-join-merge-data-frames-inner-outer-left-right
+https://r4ds.had.co.nz/data-visualisation.html
+https://www.rdocumentation.org/packages/base/versions/3.6.2/topics/unique
+https://ggplot2.tidyverse.org/reference/coord_flip.html
